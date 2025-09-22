@@ -74,7 +74,7 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "area"
             }
           },
           "mappings": [],
@@ -82,12 +82,16 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "transparent",
                 "value": 0
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "#EAB839",
+                "value": 1000
+              },
+              {
+                "color": "dark-red",
+                "value": 2000
               }
             ]
           },
@@ -152,47 +156,6 @@
       "pluginVersion": "12.1.1",
       "targets": [
         {
-          "alias": "Number of connections",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P4B5EB7AC8565B06F"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "vus",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": []
-        },
-        {
           "alias": "Request duration",
           "datasource": {
             "type": "influxdb",
@@ -217,6 +180,47 @@
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "alias": "Number of connections",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P4B5EB7AC8565B06F"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "vus",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
           "resultFormat": "time_series",
           "select": [
             [
@@ -1749,5 +1753,5 @@
   "timezone": "browser",
   "title": "Aggregate",
   "uid": "62efdae5-51fe-4d51-972e-23cd4fd50c37",
-  "version": 1
+  "version": 2
 }
