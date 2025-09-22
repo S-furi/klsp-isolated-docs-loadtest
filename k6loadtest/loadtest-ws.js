@@ -4,7 +4,7 @@ import {
     checkCompletionResponse, getRandomCompletionScenario, MAX_LATENCY_MS, WS_HOST, retrieveOptions, randomInRange, latency,
 } from "./testUtils.js";
 
-export const options = retrieveOptions(50, 100, {
+export const options = retrieveOptions(100, 150, {
     latency: [`p(95)<${MAX_LATENCY_MS}`],
 });
 
