@@ -29,7 +29,7 @@ object MemoryMetricsCollector {
         runCollectingJvmMetrics(samplesConsumer = { DataHandler.showSamples(it) }, body)
     }
 
-    suspend fun runK6CollectingJvmMetricsJson(outputJson: String = "resultsJvm.json", withInfluxDb: Boolean = false) = coroutineScope {
+    suspend fun runK6CollectingJvmMetricsJson(testType: TestType, outputJson: String = "resultsJvm.json", withInfluxDb: Boolean = false) = coroutineScope {
         val samplesConsumer: suspend (Flow<MemorySample>) -> Unit =
             if (withInfluxDb) {
                 { it.dumpToInfluxDb() }
@@ -39,8 +39,13 @@ object MemoryMetricsCollector {
 
         val testOutputDump = if (withInfluxDb) "influxdb=http://localhost:8086/k6" else "json=$outputJson"
 
+        val script = "k6loadtest/" + when(testType) {
+            TestType.REST -> "loadtest-rest.js"
+            TestType.WEBSOCKET -> "loadtest-ws.js"
+        }
+
         runCollectingJvmMetrics(samplesConsumer) {
-            ProcessBuilder("k6", "run", "--out", testOutputDump, "k6loadtest/loadtest-rest.js" )
+            ProcessBuilder("k6", "run", "--out", testOutputDump, script)
                 .redirectErrorStream(true)
                 .start()
                 .waitFor()
@@ -112,4 +117,9 @@ object MemoryMetricsCollector {
         val gcTimes: Map<String, Long>,
         val gcPauseTimes: Map<String, Double> = gcCounts.mapValues { (name, count) -> (gcTimes[name] ?: 0) / count.toDouble() }
     )
+
+    enum class TestType {
+        REST,
+        WEBSOCKET,
+    }
 }

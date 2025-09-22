@@ -5,6 +5,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import local.LoadTest
 import kotlin.time.measureTime
+import MemoryMetricsCollector.TestType
 
 object TestRunner {
     private val scope = CoroutineScope(context = SupervisorJob() + Dispatchers.IO)
@@ -20,21 +21,21 @@ object TestRunner {
         }.join()
     }
 
-    suspend fun k6MassiveTestToJsonOutput() {
+    suspend fun k6MassiveTestToJsonOutput(testType: TestType = TestType.REST) {
         val outFile = "results-jvm-rest.json"
         scope.launch {
-            MemoryMetricsCollector.runK6CollectingJvmMetricsJson(outputJson = outFile)
+            MemoryMetricsCollector.runK6CollectingJvmMetricsJson(testType, outputJson = outFile)
         }.join()
         DataHandler.plotMemoryMetrics(outFile)
     }
 
-    suspend fun k6MassiveTestForGrafanaVisualisation() {
+    suspend fun k6MassiveTestForGrafanaVisualisation(testType: TestType = TestType.REST) {
         scope.launch {
-            MemoryMetricsCollector.runK6CollectingJvmMetricsJson(withInfluxDb = true)
+            MemoryMetricsCollector.runK6CollectingJvmMetricsJson(testType, withInfluxDb = true)
         }.join()
     }
 }
 
 fun main() = runBlocking {
-    TestRunner.k6MassiveTestForGrafanaVisualisation()
+    TestRunner.k6MassiveTestForGrafanaVisualisation(TestType.WEBSOCKET)
 }
