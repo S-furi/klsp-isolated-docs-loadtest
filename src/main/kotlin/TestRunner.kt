@@ -21,7 +21,7 @@ object TestRunner {
         }.join()
     }
 
-    suspend fun k6MassiveTestToJsonOutput(testType: TestType = TestType.REST) {
+    suspend fun k6MassiveTestToJsonOutput(testType: TestType = TestType.REST_BASIC) {
         val outFile = "results-jvm-rest.json"
         scope.launch {
             MemoryMetricsCollector.runK6CollectingJvmMetricsJson(testType, outputJson = outFile)
@@ -29,7 +29,7 @@ object TestRunner {
         DataHandler.plotMemoryMetrics(outFile)
     }
 
-    suspend fun k6MassiveTestForGrafanaVisualisation(testType: TestType = TestType.REST) {
+    suspend fun k6MassiveTestForGrafanaVisualisation(testType: TestType = TestType.REST_BASIC) {
         scope.launch {
             MemoryMetricsCollector.runK6CollectingJvmMetricsJson(testType, withInfluxDb = true)
         }.join()
@@ -37,5 +37,5 @@ object TestRunner {
 }
 
 fun main() = runBlocking {
-    TestRunner.k6MassiveTestForGrafanaVisualisation(TestType.WEBSOCKET)
+    TestRunner.k6MassiveTestForGrafanaVisualisation(TestType.REST_LONG)
 }

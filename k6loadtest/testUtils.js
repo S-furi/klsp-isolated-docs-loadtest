@@ -26,8 +26,42 @@ export function retrieveOptions(minClients, maxClients, thresholds) {
   };
 }
 
+export function retrieveOptionsForRandomLoadTest(maxNumClient, testDuration, thresholds) {
+  return {
+    scenarios: {
+      loading_test: {
+        executor: "ramping-vus",
+        stages: generateStage(maxNumClient, testDuration),
+        gracefulRampDown: "10s",
+      },
+    },
+    thresholds: {
+      completion_failure_rate: [`rate<${MAX_COMPLETION_FAILURE_RATE}`],
+      ...thresholds,
+    },
+  
+  }
+}
+
+export const MIN_STEP_DURATION = 5
+export const MAX_STEP_DURATION = 20
+
+export function generateStage(maxVus, duration) {
+  const stages = [];
+  let timeLeft = duration;
+
+  while (timeLeft > 0) {
+    const stageDuration = Math.min(timeLeft, Math.floor(randomInRange(MIN_STEP_DURATION, MAX_STEP_DURATION)))
+    const target = Math.floor(randomInRange(10, maxVus))
+
+    stages.push({ duration: `${stageDuration}s`, target });
+    timeLeft -= stageDuration;
+  }
+  return stages;
+}
+
 export const REST_LSP_HOST = "http://localhost:8080/api/compiler/lsp/complete";
-export const REST_COMPILER_HOST = "http://localhost:8080/api/compiler/complete" 
+export const REST_COMPILER_HOST = "http://localhost:8080/api/compiler/complete";
 export const WS_HOST = "ws://localhost:8080/lsp/complete";
 export const latency = new Trend("latency");
 export const completionFailures = new Counter("completion_failures");
@@ -155,9 +189,9 @@ export function checkCompletionResponse(
 }
 
 export function randomInRange(min, max) {
-    return Math.random() * (max - min) + min
+  return Math.random() * (max - min) + min;
 }
 
-export function randomSleep (min, max) {
+export function randomSleep(min, max) {
   sleep(randomInRange(min, max));
 }

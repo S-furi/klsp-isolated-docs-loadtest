@@ -68,7 +68,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": true,
+            "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -128,6 +128,10 @@
               {
                 "id": "custom.spanNulls",
                 "value": false
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
               }
             ]
           }
@@ -164,7 +168,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "1s"
               ],
               "type": "time"
             },
@@ -206,7 +210,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "1s"
               ],
               "type": "time"
             },
@@ -296,7 +300,10 @@
       "pluginVersion": "12.1.1",
       "targets": [
         {
-          "alias": "Completion Failures",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P4B5EB7AC8565B06F"
+          },
           "groupBy": [
             {
               "params": [
@@ -311,9 +318,12 @@
               "type": "fill"
             }
           ],
+          "hide": false,
           "measurement": "completion_failures",
           "orderByTime": "ASC",
           "policy": "default",
+          "query": "SELECT sum(\"value\") \nFROM \"completion_failures\" \nWHERE $timeFilter\n",
+          "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -355,11 +365,20 @@
                 "value": 0
               },
               {
+                "color": "#EAB839",
+                "value": 1500
+              },
+              {
+                "color": "orange",
+                "value": 2000
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 2500
               }
             ]
-          }
+          },
+          "unit": "ms"
         },
         "overrides": []
       },
@@ -394,13 +413,13 @@
           "groupBy": [
             {
               "params": [
-                "1h"
+                "10s"
               ],
               "type": "time"
             },
             {
               "params": [
-                "0"
+                "none"
               ],
               "type": "fill"
             }
@@ -427,7 +446,7 @@
           "tags": []
         }
       ],
-      "title": "",
+      "title": "Mean Request duration",
       "type": "stat"
     },
     {
@@ -453,7 +472,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "ms"
         },
         "overrides": []
       },
@@ -488,7 +508,7 @@
           "groupBy": [
             {
               "params": [
-                "1h"
+                "10m"
               ],
               "type": "time"
             },
@@ -542,7 +562,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "barWidthFactor": 0.6,
-            "drawStyle": "line",
+            "drawStyle": "bars",
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
@@ -582,7 +602,34 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Number of connections"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    10,
+                    30
+                  ],
+                  "fill": "dash"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -607,10 +654,11 @@
       "pluginVersion": "12.1.1",
       "targets": [
         {
+          "alias": "Completion Failures",
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "1s"
               ],
               "type": "time"
             },
@@ -624,7 +672,95 @@
           "measurement": "completion_failures",
           "orderByTime": "ASC",
           "policy": "default",
+          "query": "SELECT sum(\"value\") FROM \"completion_failures\" WHERE $timeFilter GROUP BY time(1s) fill(0)",
+          "rawQuery": true,
           "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "sum"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "alias": "Number of connections",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P4B5EB7AC8565B06F"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "1s"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "hide": false,
+          "measurement": "vus",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT mean(\"value\") FROM \"vus\" WHERE $timeFilter GROUP BY time(1s) fill(null)",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "mean"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "alias": "Http Request Failed",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P4B5EB7AC8565B06F"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "1s"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "0"
+              ],
+              "type": "fill"
+            }
+          ],
+          "hide": false,
+          "measurement": "http_req_failed",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "C",
           "resultFormat": "time_series",
           "select": [
             [
@@ -731,6 +867,10 @@
               {
                 "id": "custom.axisLabel",
                 "value": "Number of connections"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
               }
             ]
           }
@@ -804,7 +944,7 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "1s"
               ],
               "type": "time"
             },
@@ -1497,8 +1637,7 @@
                 "value": 80
               }
             ]
-          },
-          "unit": "GC/s"
+          }
         },
         "overrides": [
           {
@@ -1753,5 +1892,5 @@
   "timezone": "browser",
   "title": "Aggregate",
   "uid": "62efdae5-51fe-4d51-972e-23cd4fd50c37",
-  "version": 2
+  "version": 4
 }

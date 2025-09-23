@@ -39,14 +39,10 @@ object MemoryMetricsCollector {
 
         val testOutputDump = if (withInfluxDb) "influxdb=http://localhost:8086/k6" else "json=$outputJson"
 
-        val script = "k6loadtest/" + when(testType) {
-            TestType.REST -> "loadtest-rest.js"
-            TestType.WEBSOCKET -> "loadtest-ws.js"
-        }
+        val script = testType.getK6Test()
 
         runCollectingJvmMetrics(samplesConsumer) {
             ProcessBuilder("k6", "run", "--out", testOutputDump, script)
-                .redirectErrorStream(true)
                 .start()
                 .waitFor()
         }
@@ -119,7 +115,16 @@ object MemoryMetricsCollector {
     )
 
     enum class TestType {
-        REST,
-        WEBSOCKET,
+        REST_BASIC,
+        REST_LONG,
+        WEBSOCKET_BASIC,
+        WEBSOCKET_LONG,
+    }
+
+    fun TestType.getK6Test(): String = "k6loadtest/" + when(this) {
+        TestType.REST_BASIC         -> "loadtest-rest.js"
+        TestType.WEBSOCKET_BASIC    -> "loadtest-ws.js"
+        TestType.REST_LONG          -> "long-rest-loadtest.js"
+        TestType.WEBSOCKET_LONG     -> "long-ws-loadtest.js"
     }
 }
