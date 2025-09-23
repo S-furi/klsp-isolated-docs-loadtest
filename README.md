@@ -1,8 +1,5 @@
 # Kotlin LSP `--isolated-documents` mode load test
 
-> Note: currently only RESTful APIs tests have been conducted due to a necessary
-  performance improvement in WS tests.
-
 This load tests relies on the [Kotlin compiler
 server](https://github.com/JetBrains/kotlin-compiler-server) and the
 [Kotlin-lsp](https://github.com/Kotlin/kotlin-lsp) in `--isolated-documents`
