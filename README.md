@@ -30,7 +30,9 @@ The following metrics have been analyzed, both in terms of QoS and resource usag
 ## Visualizing Data
 
 Inside the directory `./data_visualization` there's a `compose.yaml` file that fires up a local instance of grafana with
-influxDB. The main dashboard is under `Dashboards -> LoadTest -> Aggregate` (default account and pwd: `admin`).
+influxDB. The main dashboards are under `Dashboards -> LoadTest` (default account and pwd: `admin`):
+- **Aggregate**: RESTful approach results + JVM analysis
+- **K6 websockets**: WS approach + JVM analysis
 
 ## How tests are run
 
