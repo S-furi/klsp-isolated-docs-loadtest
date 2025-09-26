@@ -64,4 +64,4 @@ Where this can be interpreted as:
 
 The body of the clients can be found at [loadtest-rest.js](./k6loadtest/loadtest-rest.js) and [loadtest-ws.js](k6loadtest/loadtest-ws.js).
 
-When it comes to long-running tests, their common definition can be found in [testUtil.js](k6loadtest/testUtil.js).
+When it comes to long-running tests, their common definition can be found in [k6loadtest/testUtil.js](https://github.com/S-furi/klsp-isolated-docs-loadtest/blob/0393037edecc1784fe622075cc86ca8583815db0/k6loadtest/testUtils.js#L29).
