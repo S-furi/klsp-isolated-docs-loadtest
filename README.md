@@ -16,6 +16,7 @@ and the one with
 Moreover, the test aims in understanding workload limitations of the kotlin-lsp.
 
 The following metrics have been analyzed, both in terms of QoS and resource usage of the LS:
+
 **QoS**
 1. Latency analysis (avg, max and over time latency)
 2. Failure analysis (number of failures and overall failure rate)
@@ -60,3 +61,5 @@ Where this can be interpreted as:
 5. In 10s shut down every clients;
 
 The body of the clients can be found at [loadtest-rest.js](./k6loadtest/loadtest-rest.js) and [loadtest-ws.js](k6loadtest/loadtest-ws.js).
+
+When it comes to long-running tests, their common definition can be found in [testUtil.js](k6loadtest/testUtil.js).
