@@ -26,33 +26,49 @@ export function retrieveOptions(minClients, maxClients, thresholds) {
   };
 }
 
-export function retrieveOptionsForRandomLoadTest(maxNumClient, testDuration, thresholds) {
+export function retrieveOptionsForRandomLoadTest(
+  maxNumClient,
+  testDuration,
+  thresholds,
+) {
+  const stages = generateStage(maxNumClient, testDuration);
+  const scenarios = {};
+  let offsetSeconds = 0;
+
+  stages.forEach((stage, idx) => {
+    const duration = parseInt(String(stage.duration).replace("s", ""));
+    scenarios[`loading_test_${idx}`] = {
+      executor: "constant-vus",
+      vus: stage.target,
+      duration: stage.duration,
+      startTime: `${offsetSeconds}s`,
+      gracefulStop: "0s",
+    };
+    offsetSeconds += duration;
+  });
+
   return {
-    scenarios: {
-      loading_test: {
-        executor: "ramping-vus",
-        stages: generateStage(maxNumClient, testDuration),
-        gracefulRampDown: "10s",
-      },
-    },
+    scenarios,
     thresholds: {
       completion_failure_rate: [`rate<${MAX_COMPLETION_FAILURE_RATE}`],
       ...thresholds,
     },
-  
-  }
+  };
 }
 
-export const MIN_STEP_DURATION = 5
-export const MAX_STEP_DURATION = 20
+export const MIN_STEP_DURATION = 5;
+export const MAX_STEP_DURATION = 20;
 
 export function generateStage(maxVus, duration) {
   const stages = [];
   let timeLeft = duration;
 
   while (timeLeft > 0) {
-    const stageDuration = Math.min(timeLeft, Math.floor(randomInRange(MIN_STEP_DURATION, MAX_STEP_DURATION)))
-    const target = Math.floor(randomInRange(10, maxVus))
+    const stageDuration = Math.min(
+      timeLeft,
+      Math.floor(randomInRange(MIN_STEP_DURATION, MAX_STEP_DURATION)),
+    );
+    const target = Math.floor(randomInRange(10, maxVus));
 
     stages.push({ duration: `${stageDuration}s`, target });
     timeLeft -= stageDuration;

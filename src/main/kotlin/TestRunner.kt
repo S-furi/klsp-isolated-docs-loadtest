@@ -37,5 +37,5 @@ object TestRunner {
 }
 
 fun main() = runBlocking {
-    TestRunner.k6MassiveTestForGrafanaVisualisation(TestType.REST_LONG)
+    TestRunner.k6MassiveTestForGrafanaVisualisation(TestType.WEBSOCKET_LONG)
 }
