@@ -1,5 +1,5 @@
-import http from "k6/http"
-import { check } from "k6"
+import http from "k6/http";
+import { check } from "k6";
 import {
   checkCompletionResponse,
   getRandomCompletionScenario,
@@ -32,12 +32,18 @@ export default function () {
     params,
   );
   check(res, { "status 200": (r) => r.status === 200 });
+
+  let completions = [];
+  const parsed = JSON.parse(res.body);
+  if (parsed && parsed.length > 0) {
+    completions = parsed.map((t) => t.text);
+  }
+
   checkCompletionResponse(
-    res.body,
+    completions,
     completionScenario.expected,
     completionScenario.snippet,
     null,
   );
   randomSleep(0.1, 0.4);
 }
-

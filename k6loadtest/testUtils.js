@@ -147,7 +147,7 @@ export function getRandomCompletionScenario() {
  * Check if at least one expected completion is present in the response.
  * Logs missing completions for debugging.
  *
- * @param {string} response - raw completion response
+ * @param {string[]} response - list of raw completion labels
  * @param {string[]} expected - list of expected completions
  * @param {string} codeSnippet - the code snippet tested (for logging)
  * @param {number} elapsedTime - the time passed for tests that do not include request time (e.g. WS)
@@ -159,25 +159,24 @@ export function checkCompletionResponse(
   codeSnippet,
   elapsedTime,
 ) {
-  if (!response) {
-    console.error(`Empty response for ${codeSnippet}`);
-    completionFailures.add(1);
-    completionFailureRate.add(1);
+  const completions = response.map((t) => t.replace("(", "").replace(")", ""));
+  if (completions.length == 0) {
+    // outdated
     return;
   }
 
-  const found = expected.filter((exp) => response.includes(exp));
-  const missing = expected.filter((exp) => !response.includes(exp));
+  const found = expected.filter((exp) => completions.includes(exp));
+  const missing = expected.filter((exp) => !completions.includes(exp));
 
   let ok = found.length > 0; // at least one completion is ok
 
-  check(response, {
-    "response contains at least one expected completion": () => ok,
+  check(completions, {
+    "completions contains at least one expected completion": () => ok,
   });
 
   if (elapsedTime) {
-    check(response, {
-      [`response < ${MAX_LATENCY_MS}ms`]: () => elapsedTime < MAX_LATENCY_MS,
+    check(completions, {
+      [`completions < ${MAX_LATENCY_MS}ms`]: () => elapsedTime < MAX_LATENCY_MS,
     });
   }
 
@@ -185,7 +184,7 @@ export function checkCompletionResponse(
     console.error(
       `No expected completions found!\n` +
         `expected: ${expected.join(", ")}\n` +
-        `got: ${response}\n` +
+        `got: ${completions}\n` +
         `for code:\n${codeSnippet}`,
     );
     completionFailures.add(1);
@@ -197,7 +196,7 @@ export function checkCompletionResponse(
         `found: ${found.join(", ")}\n` +
         `missing: ${missing.join(", ")}\n` +
         `for code:\n${codeSnippet}\n` +
-        `with response: \b${response}`,
+        `with completions: \b${completions}`,
     );
   }
 
@@ -210,4 +209,75 @@ export function randomInRange(min, max) {
 
 export function randomSleep(min, max) {
   sleep(randomInRange(min, max));
+}
+
+export function setupWSCompletionClient(
+  socket,
+  { delayMin = 0.1, delayMax = 0.2 } = {},
+) {
+  const inFlight = new Map();
+
+  const sendMessage = () => {
+    const completionScenario = getRandomCompletionScenario();
+    const requestId = crypto.randomUUID();
+    const payload = JSON.stringify({
+      requestId,
+      project: {
+        args: "",
+        files: [
+          {
+            name: completionScenario.filename,
+            text: completionScenario.snippet,
+          },
+        ],
+        confType: "java",
+      },
+      line: completionScenario.line,
+      ch: completionScenario.ch,
+    });
+
+    inFlight.set(requestId, { start: Date.now(), completionScenario });
+    socket.send(payload);
+  };
+
+  const scheduleNext = () => {
+    const delayMs = Math.floor(randomInRange(delayMin, delayMax) * 1000);
+    socket.setTimeout(() => {
+      sendMessage();
+      scheduleNext();
+    }, delayMs);
+  };
+
+  sendMessage();
+  scheduleNext();
+
+  socket.on("message", (message) => {
+    const parsed = JSON.parse(message);
+    if (parsed["sessionId"] !== undefined) {
+      // init msg
+      return;
+    }
+    const requestId = parsed["requestId"];
+    if (!requestId || !inFlight.has(requestId)) {
+      // Unknown/late response
+      return;
+    }
+
+    const { start, completionScenario } = inFlight.get(requestId);
+    inFlight.delete(requestId);
+
+    const elapsed = Date.now() - start;
+    latency.add(elapsed);
+
+    let completions = [];
+    if (parsed["completions"]) {
+      completions = parsed["completions"].map((c) => c.text);
+    }
+    checkCompletionResponse(
+      completions,
+      completionScenario.expected,
+      completionScenario.snippet,
+      elapsed,
+    );
+  });
 }
