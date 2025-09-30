@@ -427,6 +427,8 @@
           "measurement": "http_req_duration",
           "orderByTime": "ASC",
           "policy": "default",
+          "query": "SELECT mean(\"value\") FROM \"http_req_duration\" WHERE $timeFilter",
+          "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -522,6 +524,8 @@
           "measurement": "http_req_duration",
           "orderByTime": "ASC",
           "policy": "default",
+          "query": "SELECT max(\"value\") FROM \"http_req_duration\" WHERE $timeFilter",
+          "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1885,12 +1889,12 @@
     "list": []
   },
   "time": {
-    "from": "2025-09-19T11:43:11.000Z",
-    "to": "2025-09-19T11:45:36.912Z"
+    "from": "2025-09-30T06:59:05.598Z",
+    "to": "2025-09-30T07:01:32.205Z"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Aggregate",
   "uid": "62efdae5-51fe-4d51-972e-23cd4fd50c37",
-  "version": 4
+  "version": 7
 }

@@ -15,7 +15,7 @@ export default function() {
     const params = { headers: { "Content-Type": "application/json" } };
     const res = ws.connect(WS_HOST, params, (socket) => {
         socket.on("open", () => {
-            setupWSCompletionClient(socket, { delayMin: 0.2, delayMax: 2 });
+            setupWSCompletionClient(socket, { delayMin: 0.1, delayMax: 0.4 });
         });
 
         socket.on("error", (e) => {
