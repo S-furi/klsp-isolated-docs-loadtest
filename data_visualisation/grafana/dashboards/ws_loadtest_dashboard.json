@@ -2059,12 +2059,12 @@
     "list": []
   },
   "time": {
-    "from": "2025-09-29T14:31:30.448Z",
-    "to": "2025-09-29T14:34:14.885Z"
+    "from": "2025-09-30T06:46:23.846Z",
+    "to": "2025-09-30T06:53:27.192Z"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "K6 websockets",
   "uid": "351dd5d0-b2c6-4132-8813-319313b7cdda",
-  "version": 8
+  "version": 9
 }
