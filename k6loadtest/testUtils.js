@@ -160,10 +160,6 @@ export function checkCompletionResponse(
   elapsedTime,
 ) {
   const completions = response.map((t) => t.replace("(", "").replace(")", ""));
-  if (completions.length == 0) {
-    // outdated
-    return;
-  }
 
   const found = expected.filter((exp) => completions.includes(exp));
   const missing = expected.filter((exp) => !completions.includes(exp));
@@ -181,23 +177,23 @@ export function checkCompletionResponse(
   }
 
   if (!ok) {
-    console.error(
-      `No expected completions found!\n` +
-        `expected: ${expected.join(", ")}\n` +
-        `got: ${completions}\n` +
-        `for code:\n${codeSnippet}`,
-    );
+    // console.error(
+    //   `No expected completions found!\n` +
+    //     `expected: ${expected.join(", ")}\n` +
+    //     `got: ${completions}\n` +
+    //     `for code:\n${codeSnippet}`,
+    // );
     completionFailures.add(1);
     completionFailureRate.add(1);
   } else if (missing.length > 0) {
-    console.warn(
-      `Missing some completions.\n` +
-        `expected: ${expected.join(", ")}\n` +
-        `found: ${found.join(", ")}\n` +
-        `missing: ${missing.join(", ")}\n` +
-        `for code:\n${codeSnippet}\n` +
-        `with completions: \b${completions}`,
-    );
+    // console.warn(
+    //   `Missing some completions.\n` +
+    //     `expected: ${expected.join(", ")}\n` +
+    //     `found: ${found.join(", ")}\n` +
+    //     `missing: ${missing.join(", ")}\n` +
+    //     `for code:\n${codeSnippet}\n` +
+    //     `with completions: \b${completions}`,
+    // );
   }
 
   return ok;
@@ -259,9 +255,15 @@ export function setupWSCompletionClient(
     }
     const requestId = parsed["requestId"];
     if (!requestId || !inFlight.has(requestId)) {
-      // Unknown/late response
+      console.error("cannot recognise this: ", parsed)
+    }
+
+    if (requestId && parsed["sessionId"]) {
+      // init msg
       return;
     }
+
+    let discarded = requestId && parsed["message"] && parsed["message"] == "discarded"
 
     const { start, completionScenario } = inFlight.get(requestId);
     inFlight.delete(requestId);
@@ -269,10 +271,16 @@ export function setupWSCompletionClient(
     const elapsed = Date.now() - start;
     latency.add(elapsed);
 
+    if (discarded) return;
+
     let completions = [];
     if (parsed["completions"]) {
       completions = parsed["completions"].map((c) => c.text);
     }
+
+    // outdated request
+    if (completions.size === 0) return;
+
     checkCompletionResponse(
       completions,
       completionScenario.expected,
