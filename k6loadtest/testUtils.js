@@ -264,14 +264,16 @@ export function setupWSCompletionClient(
     }
 
     let discarded = requestId && parsed["message"] && parsed["message"] == "discarded"
+    if (discarded) {
+      inFlight.delete(requestId);
+      return;
+    }
 
     const { start, completionScenario } = inFlight.get(requestId);
     inFlight.delete(requestId);
 
     const elapsed = Date.now() - start;
     latency.add(elapsed);
-
-    if (discarded) return;
 
     let completions = [];
     if (parsed["completions"]) {
